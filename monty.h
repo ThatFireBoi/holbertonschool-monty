@@ -8,6 +8,8 @@
 #include <string.h>
 #include <unistd.h>
 
+extern char **tokens;
+
 /**
  * struct stack_s - doubly linked list representation of a stack (or queue)
  * @n: integer
@@ -40,7 +42,10 @@ char *opcode;
 void (*f)(stack_t **stack, unsigned int line_number);
 } instruction_t;
 
-void push(stack_t **stack, unsigned int param);
-void pall(stack_t **stack, unsigned int line_number);
+int main(int ac, char **av);
+void push(stack_t **stack, unsigned int line_number, char *cmd, FILE *fd);
+void pall(stack_t **stack, unsigned int line_number, char *cmd, FILE *fd);
+void free_array(char **tokens);
+void free_stack(stack_t *stack);
 
 #endif

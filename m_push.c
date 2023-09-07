@@ -8,25 +8,36 @@
   * Return: Nothing
   */
 
-void push(stack_t **stack, unsigned int param)
+void push(stack_t **stack, unsigned int line_number, char *cmd, FILE *fd)
 {
-	stack_t *new_node = NULL;
-
-	new_node = malloc(sizeof(stack_t));
-	if (new_node == NULL)
-		handle_error(ERR_BAD_MALL, NULL, 0, NULL);
-
-	new_node->n = param;
-	if (*stack)
+	if (!tokens[1] || !isdigit(*tokens[1]))
 	{
-		new_node->next = *stack;
-		new_node->prev = (*stack)->prev;
-		(*stack)->prev = new_node;
-		*stack = new_node;
-		return;
+		dprintf(STDERR_FILENO, "L%d: usage: push integer\n", line_number);
+		free(cmd);
+		free_array(tokens);
+		free_stack(*stack);
+		fclose(fd);
+		exit(EXIT_FAILURE);
 	}
 
-	new_node->next = *stack;
+	stack_t *new_node = malloc(sizeof(stack_t));
+
+	if (!new_node)
+	{
+		fprintf(stderr, "Error: malloc failed\n");
+		free(cmd);
+		free_array(tokens);
+		free_stack(*stack);
+		fclose(fd);
+		exit(EXIT_FAILURE);
+	}
+
+	new_node->n = atoi(tokens[1]);
 	new_node->prev = NULL;
+	new_node->next = *stack;
+
+	if (*stack)
+		(*stack)->prev = new_node;
+
 	*stack = new_node;
 }

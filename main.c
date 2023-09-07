@@ -1,53 +1,63 @@
 #include "monty.h"
 
-stack_t *head = NULL;
+char **tokens = NULL;
 
 /**
-  * main - The Monty Interpreter entry point
-  * @argn: The args number
-  * @args: The args passed to the interpreter
-  *
-  * Return: Always zero
-  */
+ * main - Monty bytecode interpreter.
+ * @ac: Argument count.
+ * @av: Argument vector.
+ *
+ * Description: This program reads and interprets Monty bytecode files
+ * to perform various stack operations.
+ *
+ * Return: 0 on success, EXIT_FAILURE on failure.
+ */
 
-int main(int argn, char *args[])
+int main(int ac, char **av)
 {
-	FILE *fd = NULL;
-	size_t line_len = 0;
-	unsigned int line_num = 1;
-	int readed = 0, op_status = 0;
-	char *filename = NULL, *op_code = NULL, *op_param = NULL, *buff = NULL;
+	int input_verification, line_number = 0;
+	char *cmd = NULL;
+	size_t buffer = 0;
+	FILE *fd;
+	void (*valid_fun)(stack_t **, unsigned int, char *, FILE *) = NULL;
+	stack_t *stack = NULL;
 
-	filename = args[1];
-	check_args_num(argn);
-	fd = open_file(filename);
-
-	while ((readed = getline(&buff, &line_len, fd)) != -1)
+	if (ac != 2)
 	{
-		op_code = strtok(buff, "\t\n ");
-		if (op_code)
-		{
-			if (op_code[0] == '#')
-			{
-				++line_num;
-				continue;
-			}
-
-			op_param = strtok(NULL, "\t\n ");
-			op_status = handle_execution(op_code, op_param, line_num, op_status);
-
-			if (op_status >= 100 && op_status < 300)
-			{
-				fclose(fd);
-				handle_error(op_status, op_code, line_num, buff);
-			}
-		}
-
-		++line_num;
+		dprintf(STDERR_FILENO, "USAGE: monty file\n");
+		exit(EXIT_FAILURE);
 	}
 
-	frees_stack();
-	free(buff);
+	fd = fopen(av[1], "r");
+	if (fd == NULL)
+	{
+		dprintf(STDERR_FILENO, "Error: Can't open file %s\n", av[1]);
+		exit(EXIT_FAILURE);
+	}
+
+	while ((input_verification = getline(&cmd, &buffer, fd)) > -1)
+	{
+		line_number++;
+		if (strcmp(cmd, "\n") == 0 || *cmd == '#')
+			continue;
+
+		tokens = tokenization(cmd, " \n");
+		if (tokens == NULL)
+		{
+			continue;
+		}
+
+		valid_fun = get_op_func(tokens[0]);
+		valid_fun(&stack, line_number, cmd, fd);
+
+		buffer = 0;
+		reset_inside(cmd, tokens);
+		cmd = NULL;
+		tokens = NULL;
+	}
+
+	free(cmd);
+	free_stack(stack);
 	fclose(fd);
-	return (0);
+	exit(EXIT_SUCCESS);
 }
