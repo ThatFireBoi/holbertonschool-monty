@@ -1,26 +1,23 @@
 #include "monty.h"
 
 /**
- * pall - Prints all the values on the stack,
- * starting from the top of the stack.
- * @stack: The head of the stack
- * @line_number: The line on which the error occurred
- *
- * Return: Nothing
+ * pall - prints all the values on the stack.
+ * @stack: pointer to the stack.
+ * @line_number: line number in the Monty bytecode file.
+ * @cmd: original command from the file.
+ * @fd: file pointer for error handling.
  */
 
-void pall(stack_t **stack, unsigned int line_number)
+void pall(stack_t **stack, unsigned int line_number, char *cmd, FILE *fd)
 {
-	stack_t *current = NULL;
-	(void) line_number;
+	stack_t *current = *stack;
+	(void)line_number; /* Unused, but required to match the function signature */
+	(void)cmd;
+	(void)fd;
 
-	if (*stack)
+	while (current)
 	{
-		current = *stack;
-		while (current != NULL)
-		{
-			printf("%d\n", current->n);
-			current = current->next;
-		}
+		printf("%d\n", current->n);
+		current = current->next;
 	}
 }
