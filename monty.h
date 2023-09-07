@@ -7,8 +7,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-
-extern char **tokens;
+#include <stdarg.h>
+#include <errno.h>
+#include <stdbool.h>
 
 /**
  * struct stack_s - doubly linked list representation of a stack (or queue)
@@ -42,10 +43,39 @@ char *opcode;
 void (*f)(stack_t **stack, unsigned int line_number);
 } instruction_t;
 
-int main(int ac, char **av);
-void push(stack_t **stack, unsigned int line_number, char *cmd, FILE *fd);
-void pall(stack_t **stack, unsigned int line_number, char *cmd, FILE *fd);
+/**
+ * struct monty_s - global struct to hold all the things
+ * @file: monty file
+ * @line: line we are interpreting
+ * @stack: the stack we are building
+ * @line_number: current line number read
+ * @is_queue: flag for stack/ queue
+ *
+ * Description: this is our single global and holds everything we need.
+ */
+typedef struct monty_s
+{
+FILE *file;
+char *line;
+stack_t *stack;
+unsigned int line_number;
+bool is_queue;
+} monty_t;
+
+extern monty_t monty;
+
+void open_up(int argc, char *filename);
+void read_line(void);
+void op_choose(stack_t **stack, char *opcode);
+int main(int argc, char **argv);
+void init_montyStruct(void);
+void free_it_all(void);
+void free_build(stack_t *h);
+void push(char *argument);
+void pall(stack_t **stack, __attribute__((unused))unsigned int linenumber);
 void free_array(char **tokens);
 void free_stack(stack_t *stack);
+void pchar(stack_t **stack, __attribute__((unused))unsigned int linenumber);
+void pstr(stack_t **stack, __attribute__((unused))unsigned int linenumber);
 
 #endif

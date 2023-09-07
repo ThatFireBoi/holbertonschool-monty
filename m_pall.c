@@ -1,23 +1,22 @@
 #include "monty.h"
 
 /**
- * pall - prints all the values on the stack.
- * @stack: pointer to the stack.
- * @line_number: line number in the Monty bytecode file.
- * @cmd: original command from the file.
- * @fd: file pointer for error handling.
+ * pall - print all members
+ * @stack: double list
+ * @linenumber: line
  */
 
-void pall(stack_t **stack, unsigned int line_number, char *cmd, FILE *fd)
+void pall(stack_t **stack, __attribute__((unused))unsigned int linenumber)
 {
-	stack_t *current = *stack;
-	(void)line_number; /* Unused, but required to match the function signature */
-	(void)cmd;
-	(void)fd;
+	stack_t *a = *stack;
 
-	while (current)
+	if (!*stack)
 	{
-		printf("%d\n", current->n);
-		current = current->next;
+		return;
+	}
+	while (a)
+	{
+		printf("%d\n", a->n);
+		a = a->next;
 	}
 }
