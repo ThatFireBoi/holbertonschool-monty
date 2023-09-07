@@ -10,6 +10,8 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 /**
  * struct stack_s - doubly linked list representation of a stack (or queue)
@@ -29,6 +31,28 @@ struct stack_s *next;
 } stack_t;
 
 /**
+ * struct globals - global structure to use in the functions
+ * @lifo: is stack or queue
+ * @cont: current line
+ * @arg: second parameter inside the current line
+ * @head: doubly linked list
+ * @fd: file descriptor
+ * @buffer: input text
+ *
+ * Description: doubly linked list node structure
+ * for stack, queues, LIFO, FIFO Holberton project
+ */
+typedef struct globals
+{
+int lifo;
+unsigned int cont;
+char  *arg;
+stack_t *head;
+FILE *fd;
+char *buffer;
+} global_t;
+
+/**
  * struct instruction_s - opcode and its function
  * @opcode: the opcode
  * @f: function to handle the opcode
@@ -43,39 +67,23 @@ char *opcode;
 void (*f)(stack_t **stack, unsigned int line_number);
 } instruction_t;
 
-/**
- * struct monty_s - global struct to hold all the things
- * @file: monty file
- * @line: line we are interpreting
- * @stack: the stack we are building
- * @line_number: current line number read
- * @is_queue: flag for stack/ queue
- *
- * Description: this is our single global and holds everything we need.
- */
-typedef struct monty_s
-{
-FILE *file;
-char *line;
-stack_t *stack;
-unsigned int line_number;
-bool is_queue;
-} monty_t;
+extern global_t vglo;
 
-extern monty_t monty;
+void _push(stack_t **stack, unsigned int line_number);
+void _pall(stack_t **stack, unsigned int line_number);
 
-void open_up(int argc, char *filename);
-void read_line(void);
-void op_choose(stack_t **stack, char *opcode);
-int main(int argc, char **argv);
-void init_montyStruct(void);
-void free_it_all(void);
-void free_build(stack_t *h);
-void push(char *argument);
-void pall(stack_t **stack, __attribute__((unused))unsigned int linenumber);
-void free_array(char **tokens);
-void free_stack(stack_t *stack);
-void pchar(stack_t **stack, __attribute__((unused))unsigned int linenumber);
-void pstr(stack_t **stack, __attribute__((unused))unsigned int linenumber);
+void (*get_opcodes(char *opc))(stack_t **stack, unsigned int line_number);
+
+int _sch(char *s, char c);
+char *_strtoky(char *s, char *d);
+void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size);
+void *_calloc(unsigned int nmemb, unsigned int size);
+int _strcmp(char *s1, char *s2);
+
+stack_t *add_dnodeint_end(stack_t **head, const int n);
+stack_t *add_dnodeint(stack_t **head, const int n);
+void free_dlistint(stack_t *head);
+
+void free_vglo(void);
 
 #endif
