@@ -1,43 +1,35 @@
 #include "monty.h"
 
 /**
-  * push - Adds a new node at the beginning of the stack
-  * @stack: The head of the stack
-  * @param: The value to adds on the stack
-  *
-  * Return: Nothing
-  */
+ * push - add node to list
+ * @argument: int
+ */
 
-void push(stack_t **stack, unsigned int line_number, char *cmd, FILE *fd)
+void push(char *argument)
 {
-	if (!tokens[1] || !isdigit(*tokens[1]))
+	int data;
+	stack_t *new;
+
+	if (!check_input(argument))
 	{
-		dprintf(STDERR_FILENO, "L%d: usage: push integer\n", line_number);
-		free(cmd);
-		free_array(tokens);
-		free_stack(*stack);
-		fclose(fd);
+		dprintf(STDERR_FILENO, "L%u: usage: push integer\n"
+				, monty.line_number);
+		free_it_all();
 		exit(EXIT_FAILURE);
 	}
 
-	stack_t *new_node = malloc(sizeof(stack_t));
-
-	if (!new_node)
+	data = atoi(argument);
+	new = malloc(sizeof(stack_t));
+	if (!new)
 	{
-		fprintf(stderr, "Error: malloc failed\n");
-		free(cmd);
-		free_array(tokens);
-		free_stack(*stack);
-		fclose(fd);
+		dprintf(STDERR_FILENO, "Error: malloc failed\n");
+		free_it_all();
 		exit(EXIT_FAILURE);
 	}
-
-	new_node->n = atoi(tokens[1]);
-	new_node->prev = NULL;
-	new_node->next = *stack;
-
-	if (*stack)
-		(*stack)->prev = new_node;
-
-	*stack = new_node;
+	new->n = data;
+	new->next = monty.stack;
+	new->prev = NULL;
+	if (new->next)
+		new->next->prev = new;
+	monty.stack = new;
 }

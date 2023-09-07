@@ -1,63 +1,104 @@
 #include "monty.h"
 
-char **tokens = NULL;
+#include "monty.h"
 
 /**
- * main - Monty bytecode interpreter.
- * @ac: Argument count.
- * @av: Argument vector.
- *
- * Description: This program reads and interprets Monty bytecode files
- * to perform various stack operations.
- *
- * Return: 0 on success, EXIT_FAILURE on failure.
+ * open_up - open a monty and validate input
+ * @argc: args count
+ * @filename: path to monty
  */
-
-int main(int ac, char **av)
+void open_up(int argc, char *filename)
 {
-	int input_verification, line_number = 0;
-	char *cmd = NULL;
-	size_t buffer = 0;
-	FILE *fd;
-	void (*valid_fun)(stack_t **, unsigned int, char *, FILE *) = NULL;
-	stack_t *stack = NULL;
-
-	if (ac != 2)
+	if (argc != 2)
 	{
 		dprintf(STDERR_FILENO, "USAGE: monty file\n");
 		exit(EXIT_FAILURE);
 	}
-
-	fd = fopen(av[1], "r");
-	if (fd == NULL)
+	monty.file = fopen(filename, "r");
+	if (!monty.file)
 	{
-		dprintf(STDERR_FILENO, "Error: Can't open file %s\n", av[1]);
+		dprintf(STDERR_FILENO, "Error: Can't open file %s\n", filename);
 		exit(EXIT_FAILURE);
 	}
+}
 
-	while ((input_verification = getline(&cmd, &buffer, fd)) > -1)
+/**
+ * read_line - reads and executes each line of input from monty file
+ */
+void read_line(void)
+{
+	size_t len = 0;
+	ssize_t read;
+	char *opcode, *data;
+
+	while ((read = getline(&monty.line, &len, monty.file) != -1))
 	{
-		line_number++;
-		if (strcmp(cmd, "\n") == 0 || *cmd == '#')
-			continue;
-
-		tokens = tokenization(cmd, " \n");
-		if (tokens == NULL)
+		opcode = strtok(monty.line, " ");
+		if (*opcode == '#' || *opcode == '\n')
 		{
+			monty.line_number++;
 			continue;
 		}
-
-		valid_fun = get_op_func(tokens[0]);
-		valid_fun(&stack, line_number, cmd, fd);
-
-		buffer = 0;
-		reset_inside(cmd, tokens);
-		cmd = NULL;
-		tokens = NULL;
+		else if (strcmp(opcode, "push") == 0)
+		{
+			data = strtok(NULL, " \n");
+			if (monty.is_queue)
+			{
+				push_queue(data);
+			}
+			else
+				push(data);
+		}
+		else
+			op_choose(&monty.stack, opcode);
+		monty.line_number++;
 	}
+}
 
-	free(cmd);
-	free_stack(stack);
-	fclose(fd);
-	exit(EXIT_SUCCESS);
+/**
+ * op_choose - find & call the function that corresponds with the opcode
+ * @stack: **pointer to stack
+ * @opcode: opcode from this line of our monty file
+ */
+void op_choose(stack_t **stack, char *opcode)
+{
+	int i;
+	char *op;
+	instruction_t fncs[] = {
+		{"pall", pall},
+		{"pint", pint},
+		{"pop", pop},
+		{"swap", swap},
+		{"add", add},
+		{"nop", nop},
+		{"sub", sub},
+		{"div", div_op},
+		{"mul", mul},
+		{"mod", mod},
+		{"pchar", pchar},
+		{"pstr", pstr},
+		{"rotl", rotl},
+		{"rotr", rotr},
+		{"stack", stack_op},
+		{"queue", queue_op},
+		{NULL, NULL}
+	};
+
+	op = strtok(opcode, "\n");
+	for (i = 0; fncs[i].opcode; i++)
+	{
+		if (strcmp(op, fncs[i].opcode) == 0)
+		{
+			fncs[i].f(stack, monty.line_number);
+			return;
+		}
+	}
+	if (strcmp(opcode, "push"))
+	{
+		dprintf(STDERR_FILENO, "L%u: ", monty.line_number);
+		dprintf(STDERR_FILENO, "unknown instruction %s\n", opcode);
+	}
+	else
+		dprintf(STDERR_FILENO, "L%u: usage: push integer\n", monty.line_number);
+	exit(EXIT_FAILURE);
 }
