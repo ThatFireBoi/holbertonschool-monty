@@ -7,12 +7,12 @@ global_t vglo;
  *
  * Return: no return
  */
-void free_vglo(void)
+/** void free_vglo(void)
 {
 	free_dlistint(vglo.head);
 	free(vglo.buffer);
 	fclose(vglo.fd);
-}
+} **/
 
 /**
  * start_vglo - initializes the global variables
