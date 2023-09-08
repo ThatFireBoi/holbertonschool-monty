@@ -1,57 +1,60 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "monty.h"
-
 /**
- * push - Pushes An Element To The Stack.
- * @stack: Pointer To The head
- * @line_number: The Line Number
- * Return:Void
- */
-
-void push(stack_t **stack, unsigned int line_number)
+ * f_push - add node to the stack
+ * @head: stack head
+ * @counter: line_number
+ * Return: no return
+*/
+void f_push(stack_t **head, unsigned int counter)
 {
-	int value;
+	int n, j = 0, flag = 0;
 
-	if (scanf(" %d ", &value) != 1)
+	if (bus.arg)
 	{
-		fprintf(stderr, "L%d: usage: push integer\n", line_number);
-		exit(EXIT_FAILURE);
-	}
-	stack_t *new_node = malloc(sizeof(stack_t));
-
-	if (new_node == NULL)
-	{
-		fprintf(stderr, "Error: out of memory\n");
-		exit(EXIT_FAILURE);
-	}
-	new_node->n = value;
-	new_node->prev = NULL;
-	new_node->next = *stack;
-	*stack = new_node;
+		if (bus.arg[0] == '-')
+			j++;
+		for (; bus.arg[j] != '\0'; j++)
+		{
+			if (bus.arg[j] > 57 || bus.arg[j] < 48)
+				flag = 1; }
+		if (flag == 1)
+		{ fprintf(stderr, "L%d: usage: push integer\n", counter);
+			fclose(bus.file);
+			free(bus.content);
+			free_stack(*head);
+			exit(EXIT_FAILURE); }}
+	else
+	{ fprintf(stderr, "L%d: usage: push integer\n", counter);
+		fclose(bus.file);
+		free(bus.content);
+		free_stack(*head);
+		exit(EXIT_FAILURE); }
+	n = atoi(bus.arg);
+	if (bus.lifi == 0)
+		addnode(head, n);
+	else
+		addqueue(head, n);
 }
 
 /**
- * pall - Prints All The Values On The Stack
- * @stack: Pointer To The Head
- * @line_number: Line Number
- * Return: Void
- */
-
-void pall(stack_t **stack, unsigned int line_number)
+ * f_pall - prints the stack
+ * @head: stack head
+ * @counter: no used
+ * Return: no return
+*/
+void f_pall(stack_t **head, unsigned int counter)
 {
-	(void)line_number;
+	stack_t *h;
+	(void)counter;
 
-	if (*stack == NULL)
-	{
+	h = *head;
+	if (h == NULL)
 		return;
-	}
-	stack_t *current = *stack;
-
-	while (current != NULL)
+	while (h)
 	{
-		printf("%d ", current->n);
-		current = current->next;
+		printf("%d\n", h->n);
+		h = h->next;
 	}
-	printf("\n");
 }
